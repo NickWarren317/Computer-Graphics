@@ -100,7 +100,7 @@ var long_block = [
         add_right,
         add_outer_right
     ]
-];
+]; 
 
 var right_step_block = [
     [
