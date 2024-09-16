@@ -383,11 +383,18 @@ function is_within_mino(x, y){
             var p3 = points[j+2]; //b_left
             var p4 = points[j+3]; //b_right
 
-            //check if y is less than top y and greater than bottom y
-            if(y <= p1[1] && y >= p3[1]){
+            let bigY, bigX, lilY, lilX;
 
+            bigY = Math.max(p1[1], p2[1], p3[1], p4[1]);
+            bigX = Math.max(p1[0], p2[0], p3[0], p4[0]);
+            
+            lilY = Math.min(p1[1], p2[1], p3[1], p4[1]);
+            lilX = Math.min(p1[0], p2[0], p3[0], p4[0]);
+
+            //check if y is less than top y and greater than bottom y
+            if(y <= bigY && y >= lilY){
                 //check if x is less than right x and greater than left x
-                if(x <= p4[0] && x >= p2[0]){
+                if(x <= bigX && x >= lilX){
                     //once found, return the index of the mino
                     return i;
                 }
@@ -400,26 +407,10 @@ function is_within_mino(x, y){
 }
 
 
-//rotates points between the two indicies of the points
-//(−(y−b)+a,(x−a)+b)
-/*
-function rotate_clockwise(mino_idx){
-    //Iterate the template....
-    //needs a way to keep track of what type of mino each is....
-    //and what is the current orientation
-    var orient = pieces_orientation[mino_idx];
-    
-    pieces_orientation[mino_idx] = (orient + 1) % minos[mino_idx].length;
-
-    redraw_minos();
-
-}*/
-
 function rotate_counter_clockwise(mino_idx,x,y){
     //finds which square is clicked, then rotates points around its center...
-
-    for(var i = 0; i < minos.length; i++){
-        var p_idx = pieces_index[i];
+    //for(var i = 0; i < minos.length; i++){
+        var p_idx = pieces_index[mino_idx];
         for (var j = p_idx; j < p_idx + 16; j = j + 4){
             //get the 4 points
             var p1 = points[j];   //t_right
@@ -427,27 +418,32 @@ function rotate_counter_clockwise(mino_idx,x,y){
             var p3 = points[j+2]; //b_left
             var p4 = points[j+3]; //b_right
 
+
+            let bigY, bigX, lilY, lilX;
+
+            bigY = Math.max(p1[1], p2[1], p3[1], p4[1]);
+            bigX = Math.max(p1[0], p2[0], p3[0], p4[0]);
+
+            lilY = Math.min(p1[1], p2[1], p3[1], p4[1]);
+            lilX = Math.min(p1[0], p2[0], p3[0], p4[0]);
+
             //check if y is less than top y and greater than bottom y
-            if(y <= p1[1] && y >= p3[1]){
+            if(y <= bigY && y >= lilY){
                 //check if x is less than right x and greater than left x
-                if(x <= p4[0] && x >= p2[0]){
+                if(x <= bigX && x >= lilX){
                     //once found, return the index of the mino
-                    return rotate_about_a_point(((p1[0] + p2[0])/2), ((p2[1] + p3[1])/2), mino_idx);
+                    rotate_about_a_point(((bigX + lilX)/2), ((bigY + lilY)/2), mino_idx);
                 }
             }
-        }
+
+        //}
     }
 }
 function rotate_about_a_point(x,y,mino_idx){
-
     var start = pieces_index[mino_idx];
     console.log(["Rotating ", mino_idx]);
     for(var i = start; i < start + 16; i++){
         //subtract the C.O.R.
-        console.log(i);
-        console.log(points[i][0],points[i][1]);
-
-
         var temp_y, temp_x;
 
         // x,y -> -y,x
@@ -459,8 +455,6 @@ function rotate_about_a_point(x,y,mino_idx){
         //swap x and y, add back the original center
         points[i][0] =  -temp_y + x;
         points[i][1] =  temp_x + y;
-        
-        console.log(points[i][0],points[i][1]);
     }
 
     render();
@@ -606,15 +600,15 @@ function render() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    points.push(vec2(-1,-0.7));
-    points.push(vec2(-1, 0.7));
-    points.push(vec2( 1,-0.7));
-    points.push(vec2( 1, 0.7));
+    //points.push(vec2(-1,-0.7));
+    //points.push(vec2(-1, 0.7));
+    //points.push(vec2( 1,-0.7));
+    //points.push(vec2( 1, 0.7));
     var bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId );
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
-    points.length = points.length - 4;
+    //points.length = points.length - 4;
 
     // Associate out shader variables with our data buffer
     var aPosition = gl.getAttribLocation( program, "aPosition" );
