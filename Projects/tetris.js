@@ -377,10 +377,7 @@ function rotate_clockwise(mino_idx){
     //and what is the current orientation
     var orient = pieces_orientation[mino_idx];
     
-    draw_tetrimino(minos[mino_idx], square_centers[mino_idx][0], square_centers[mino_idx][1], 0.025, (orient + 1) % minos[mino_idx].length);
-
-    minos[mino_idx] = -1;
-    pieces_orientation[mino_idx] = orient + 1
+    pieces_orientation[mino_idx] = (orient + 1) % minos[mino_idx].length;
 
     redraw_minos();
 
@@ -392,18 +389,7 @@ function rotate_counter_clockwise(mino_idx, x , y){
     //and what is the current orientation
     var orient = pieces_orientation[mino_idx];
     
-    console.log(points);
-    console.log(points.length);
-    console.log(minos);
-    
-    
-    draw_tetrimino(minos[mino_idx], square_centers[mino_idx][0], square_centers[mino_idx][1], 0.025, (orient + 3) % minos[mino_idx].length);
-
-    //move tetrimino to give the illusion that it is rotating about the center of the clicked mino
-
-
-    minos[mino_idx] = -1;
-    pieces_orientation[mino_idx] = orient + 1
+    pieces_orientation[mino_idx] = (orient + 3) % minos[mino_idx].length;
 
     redraw_minos();
 }
@@ -449,17 +435,18 @@ function add_outer_bottom(x,y,size){
 function redraw_minos(){
 
     //clear shape buffers...
-    var temp_points = points;
-    var temp_centers = square_centers;
-    var temp_minos = minos;
+    var temp_points = [...points];
+    var temp_centers = [...square_centers];
+    var temp_minos = [...minos];
 
     //clear things
-    minos=[];
-    start_idx = [];
+    minos.length = 0;
+    points.length = 0;
+    square_centers.length = 0;
+    start_idx.length = 0;
     num_minos = 0;
-    points = [];
     num_shapes = 0;
-    square_centers = []
+    
 
     //redraw valid minos
     for(var i = 0; i < temp_minos.length; i++){
