@@ -27,7 +27,6 @@ var death_line = -0.7;
 
 //holds the individual squares...
 var num_shapes = 0;
-var num_positions = [];
 var start_idx = [0];
 
 var square_centers = [];
@@ -309,6 +308,7 @@ window.onload = function init()
             //if top object is selected
             if(c_object != -1 && c_object >= 7){
                 rotate_counter_clockwise(c_object, t1[0], t2[1]);
+                console.log(t1);
             }
         //Also duplicates top mino if top mino is clicked
         } else {
@@ -544,6 +544,24 @@ function is_mino_under_line(mino_idx, p){
     return false;
 }
 
+function delete_tetrimino(mino_idx){
+    //hold start of points of deleted mino
+    var p_start = pieces_index[mino_idx];
+
+    //replace last mino with deleted one
+    //decrement array size;
+    minos = minos - 1;
+
+    //replace indices
+    minos[mino_idx] = mino_idx[minos];
+
+    //modify piece starts
+    pieces_index[mino_idx] = pieces_index[minos];
+
+
+
+}
+
 //draws a tetrimino based on a set of instructions
 function draw_tetrimino(instructions, x, y, size,orient = 0){
     pieces_index[num_minos] = num_minos * 16;
@@ -568,17 +586,13 @@ function draw_tetrimino(instructions, x, y, size,orient = 0){
 function make_square_at_point(x, y, size){
     
     //drawing square so, 4 points.
-
-    num_positions[num_shapes] = 4;
-
     if(num_shapes === 0){
         start_idx[num_shapes] = 0;
     } else {
-        start_idx[num_shapes] = start_idx[num_shapes - 1] + num_positions[num_shapes - 1];
+        start_idx[num_shapes] = start_idx[num_shapes - 1] + 4;
     }
 
-    num_shapes = num_shapes + 1;
-
+    num_shapes++;
 
     points.push(vec2(x + size, y + size)); //top right
     points.push(vec2(x - size, y + size)); //top left
@@ -608,8 +622,16 @@ function render() {
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId );
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
-    //points.length = points.length - 4;
+    /*
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, 32*num_minos, gl.STATIC_DRAW );
 
+    var colorLoc = gl.getAttribLocation( program, "aColor");
+    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(colorLoc);
+    //points.length = points.length - 4;
+*/
     // Associate out shader variables with our data buffer
     var aPosition = gl.getAttribLocation( program, "aPosition" );
     gl.vertexAttribPointer( aPosition, 2, gl.FLOAT, false, 0, 0 );
