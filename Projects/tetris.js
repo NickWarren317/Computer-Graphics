@@ -12,6 +12,7 @@
 //event variables
 var is_mousedown = false;
 var shift_key = false;
+var mino_deleted = false;
 var held_mino = -1;
 var t1, t2;
 
@@ -22,14 +23,11 @@ var points=[];
 var colors=[];
 
 var square_size = 0.025;
-var offset = 2.03;
+var offset = 2.045;
 var death_line = -0.7;
 
 //holds the individual squares...
 var num_shapes = 0;
-var start_idx = [0];
-
-var square_centers = [];
 
 // holds each tetrimino location and infomation...
 let num_minos = 0;
@@ -40,16 +38,21 @@ var mino_colors = [];
 //rotation varaible of a tetrimino, may or may not be used...
 var pieces_orientation = [];
 
+var lines = [
+    vec2(1,0.7),
+    vec2(-1,0.7),
+    vec2(1,-0.7),
+    vec2(-1,-0.7)
+]
 
-
-var colors = [
-    vec4(0.0, 0.0, 0.0, 1.0),  // black
-    vec4(1.0, 0.0, 0.0, 1.0),  // red
-    vec4(1.0, 1.0, 0.0, 1.0),  // yellow
-    vec4(0.0, 1.0, 0.0, 1.0),  // green
-    vec4(0.0, 0.0, 1.0, 1.0),  // blue
-    vec4(1.0, 0.0, 1.0, 1.0),  // magenta
-    vec4(0.0, 1.0, 1.0, 1.0)   // cyan
+var color_select = [
+    vec4(0.75, 0.5, 0.0, 0.8),  // orange - cc L
+    vec4(.5, 0.0, 0.0, 0.8),  // red - left step
+    vec4(.5, .5, 0.0, 0.8),  // yellow - square
+    vec4(0.0, .5, 0.0, 0.8),  // green - right step
+    vec4(0.0, 0.0, .5, 0.8),  // blue - clockwise L
+    vec4(.5, 0.0, .5, 0.8),  // magenta - block
+    vec4(0, .5, .5, 0.8)   // cyan - tall
 ];
 
 //templates for drawing each shape and each orientation.
@@ -282,6 +285,7 @@ window.onload = function init()
         is_mousedown = false;
         console.log("Up!");
         held_mino = -1;
+        mino_deleted = false;
       });
 
     canvas.addEventListener("mousedown", function(event){
@@ -303,6 +307,7 @@ window.onload = function init()
             held_mino = obj;
         }
         
+        console.log(c_object);
         //Mousedown + Shift triggers clockwise rotation
         if(shift_key){
             //if top object is selected
@@ -312,7 +317,7 @@ window.onload = function init()
             }
         //Also duplicates top mino if top mino is clicked
         } else {
-            if(c_object != -1 && c_object < 7){
+            if(c_object != -1 && c_object < 7 && !mino_deleted){
                 draw_tetrimino(minos[c_object], t1[0], t1[1], square_size, 0);
             }
         }
@@ -326,8 +331,7 @@ window.onload = function init()
           t2 = vec2(2*x/canvas.width-1, 2*(canvas.height-y)/canvas.height-1);
           
           var c_object = is_within_mino(t1[0], t1[1]);
-            
-          console.log(["Held Mino" , held_mino]);   
+              
           if(c_object != -1 && held_mino != -1){
             move_mino_x(held_mino, t2[0] - t1[0]);
             move_mino_y(held_mino, t2[1] - t1[1]);
@@ -358,7 +362,6 @@ function move_mino_x(mino_idx, dist){
     for(var i = star; i < star + 16; i++){
         points[i][0] = points[i][0] + dist;
     }
-    //square_centers[mino_idx][0] = square_centers[mino_idx][0] + dist;
     render();
 }
 
@@ -368,7 +371,11 @@ function move_mino_y(mino_idx, dist){
     for(var i = star; i < star + 16; i++){
         points[i][1] = points[i][1] + dist;
     }
-    //square_centers[mino_idx][1] = square_centers[mino_idx][1] + dist;
+
+    if(is_mino_under_line(mino_idx, points)){
+        delete_tetrimino(mino_idx);
+        return;
+    }
     render();
 }
 //checks if in bounds of a square, then returns the mino index if found, or -1 if not
@@ -392,9 +399,9 @@ function is_within_mino(x, y){
             lilX = Math.min(p1[0], p2[0], p3[0], p4[0]);
 
             //check if y is less than top y and greater than bottom y
-            if(y <= bigY && y >= lilY){
+            if(y < bigY && y > lilY){
                 //check if x is less than right x and greater than left x
-                if(x <= bigX && x >= lilX){
+                if(x < bigX && x > lilX){
                     //once found, return the index of the mino
                     return i;
                 }
@@ -409,14 +416,13 @@ function is_within_mino(x, y){
 
 function rotate_counter_clockwise(mino_idx,x,y){
     //finds which square is clicked, then rotates points around its center...
-    //for(var i = 0; i < minos.length; i++){
         var p_idx = pieces_index[mino_idx];
         for (var j = p_idx; j < p_idx + 16; j = j + 4){
             //get the 4 points
-            var p1 = points[j];   //t_right
-            var p2 = points[j+1]; //t_left
-            var p3 = points[j+2]; //b_left
-            var p4 = points[j+3]; //b_right
+            var p1 = points[j];
+            var p2 = points[j+1];
+            var p3 = points[j+2]; 
+            var p4 = points[j+3]; 
 
 
             let bigY, bigX, lilY, lilX;
@@ -426,6 +432,9 @@ function rotate_counter_clockwise(mino_idx,x,y){
 
             lilY = Math.min(p1[1], p2[1], p3[1], p4[1]);
             lilX = Math.min(p1[0], p2[0], p3[0], p4[0]);
+            
+            console.log(x,y);
+            console.log(bigX,bigY,lilX,lilY);
 
             //check if y is less than top y and greater than bottom y
             if(y <= bigY && y >= lilY){
@@ -433,10 +442,10 @@ function rotate_counter_clockwise(mino_idx,x,y){
                 if(x <= bigX && x >= lilX){
                     //once found, return the index of the mino
                     rotate_about_a_point(((bigX + lilX)/2), ((bigY + lilY)/2), mino_idx);
+                    if(is_mino_under_line(mino_idx, points)) delete_tetrimino(mino_idx);
+                    return;
                 }
             }
-
-        //}
     }
 }
 function rotate_about_a_point(x,y,mino_idx){
@@ -461,75 +470,42 @@ function rotate_about_a_point(x,y,mino_idx){
 
 }
 //Drawing each square about a center square
-function add_up(x,y,size){
-    make_square_at_point(x,y + size*offset, size);
+function add_up(x,y,size, color){
+    make_square_at_point(x,y + size*offset, size, color);
 }
-function add_down(x,y,size){
-    make_square_at_point(x,y - size*offset, size);
+function add_down(x,y,size, color){
+    make_square_at_point(x,y - size*offset, size, color);
 }
-function add_right(x,y,size){
-    make_square_at_point(x + size*offset,y, size);
+function add_right(x,y,size, color){
+    make_square_at_point(x + size*offset,y, size, color);
 }
-function add_left(x,y,size){
-    make_square_at_point(x - size*offset,y, size);
+function add_left(x,y,size, color){
+    make_square_at_point(x - size*offset,y, size, color);
 }
-function add_bottom_left(x,y,size){
-    make_square_at_point(x - size*offset, y - size*offset, size);
+function add_bottom_left(x,y,size, color){
+    make_square_at_point(x - size*offset, y - size*offset, size, color);
 }
-function add_bottom_right(x,y,size){
-    make_square_at_point(x + size*offset, y - size*offset, size);
+function add_bottom_right(x,y,size, color){
+    make_square_at_point(x + size*offset, y - size*offset, size, color);
 }
-function add_top_left(x,y,size){
-    make_square_at_point(x - size*offset, y + size*offset, size);
+function add_top_left(x,y,size, color){
+    make_square_at_point(x - size*offset, y + size*offset, size, color);
 }
-function add_top_right(x,y,size){
-    make_square_at_point(x + size*offset, y + size*offset, size);
+function add_top_right(x,y,size, color){
+    make_square_at_point(x + size*offset, y + size*offset, size, color);
 }
-function add_outer_top(x,y,size){
-    make_square_at_point(x, y + size*offset*2, size);
+function add_outer_top(x,y,size, color){
+    make_square_at_point(x, y + size*offset*2, size, color);
 }
-function add_outer_right(x,y,size){
-    make_square_at_point(x + size*offset*2, y, size);
+function add_outer_right(x,y,size, color){
+    make_square_at_point(x + size*offset*2, y, size, color);
 }
-function add_outer_left(x,y,size){
-    make_square_at_point(x - size*offset*2, y, size);
+function add_outer_left(x,y,size, color){
+    make_square_at_point(x - size*offset*2, y, size, color);
 }
-function add_outer_bottom(x,y,size){
-    make_square_at_point(x, y - size*offset*2, size);
+function add_outer_bottom(x,y,size, color){
+    make_square_at_point(x, y - size*offset*2, size, color);
 }
-
-/*
-function redraw_minos(){
-
-    //clear shape buffers...
-    let temp_points = [...points];
-    let temp_centers = [...square_centers];
-    let temp_minos = [...minos];
-    let temp_num = num_minos;
-
-    //clear things
-    minos.length = 0;
-    points.length = 0;
-    square_centers.length = 0;
-    start_idx.length = 0;
-    pieces_index.length = 0;
-
-    num_minos = 0;
-    num_shapes = 0;
-
-    //redraw valid minos
-    for(var i = 0; i < temp_num; i++){
-        //minos marked as -1 will be ignored, as they are deleted or rotated...
-        if(temp_minos[i] === -1 || is_mino_under_line(i, temp_points)){
-        //minos are redrawn when still there
-        } else {
-            draw_tetrimino(temp_minos[i], temp_centers[i][0], temp_centers[i][1], square_size, pieces_orientation[i]);
-        }
-    }
- 
-
-    render();
-}*/
 
 //check if below delete line, then delete if is
 function is_mino_under_line(mino_idx, p){
@@ -537,7 +513,6 @@ function is_mino_under_line(mino_idx, p){
     for (var i = start; i < start + 16; i++){
         var y = p[i][1];
         if(y <= death_line) {
-            minos[mino_idx] = -1;
             return true;
         }
     }
@@ -546,20 +521,54 @@ function is_mino_under_line(mino_idx, p){
 
 function delete_tetrimino(mino_idx){
     //hold start of points of deleted mino
+
+    console.log(["deleting mino:", mino_idx]);
+    
     var p_start = pieces_index[mino_idx];
 
-    //replace last mino with deleted one
-    //decrement array size;
-    minos = minos - 1;
-
+    console.log(p_start);
+    console.log(points);
+    //swap verticies
+    //swap colors
+    for (var i = p_start; i < p_start + 16; i++){
+        colors[i] = colors[pieces_index[num_minos] + i - p_start];
+        points[i] = points[pieces_index[num_minos] + i - p_start];
+    }
     //replace indices
-    minos[mino_idx] = mino_idx[minos];
-
+    minos[mino_idx] = mino_idx[num_minos-1];
     //modify piece starts
-    pieces_index[mino_idx] = pieces_index[minos];
+    pieces_index[mino_idx] = pieces_index[num_minos-1];
 
+    console.log(points);
+    console.log(points.length);
+    console.log(num_minos);
+    colors.length = colors.length - 16;
+    points.length = points.length - 16;
+    num_shapes = num_shapes - 4;
 
+    minos.length = minos.length - 1;
+    pieces_index.length = pieces_index.length - 1;
+    
+    num_minos = num_minos - 1;
 
+    held_mino = -1;
+    console.log(points.length);
+    console.log(num_minos);
+    mino_deleted = true;
+    render();
+}
+
+function get_color(instructions){
+    let color = vec4(1,1,1,1);
+    if(instructions === counter_clockwise_l_block) color = color_select[0];
+    if(instructions === left_step_block) color = color_select[1];
+    if(instructions === square_block) color = color_select[2];
+    if(instructions === right_step_block) color = color_select[3];
+    if(instructions === clockwise_l_block) color = color_select[4];
+    if(instructions === t_block) color = color_select[5];
+    if(instructions === long_block) color = color_select[6];
+    
+    return color;
 }
 
 //draws a tetrimino based on a set of instructions
@@ -567,13 +576,12 @@ function draw_tetrimino(instructions, x, y, size,orient = 0){
     pieces_index[num_minos] = num_minos * 16;
     minos[num_minos] = instructions;
     pieces_orientation[num_minos] = orient;
-    square_centers[num_minos] = vec2(x,y);
-    //mino_colors[num_minos] = color;
 
     console.log(num_minos);
+    let color = get_color(instructions);
 
     for(var i = 0 ; i < instructions[orient].length ; i++){
-        instructions[orient][i](x,y,size);
+        instructions[orient][i](x,y,size,color);
     }
 
     num_minos = num_minos + 1;  
@@ -583,15 +591,7 @@ function draw_tetrimino(instructions, x, y, size,orient = 0){
 
 
 
-function make_square_at_point(x, y, size){
-    
-    //drawing square so, 4 points.
-    if(num_shapes === 0){
-        start_idx[num_shapes] = 0;
-    } else {
-        start_idx[num_shapes] = start_idx[num_shapes - 1] + 4;
-    }
-
+function make_square_at_point(x, y, size, color){
     num_shapes++;
 
     points.push(vec2(x + size, y + size)); //top right
@@ -599,6 +599,10 @@ function make_square_at_point(x, y, size){
     points.push(vec2(x - size, y - size)); //bottom left
     points.push(vec2(x + size, y - size)); //bottom right
     
+    colors.push(color);
+    colors.push(color);
+    colors.push(color);
+    colors.push(color);
 }
 
 function render() {
@@ -608,36 +612,27 @@ function render() {
     if (!gl) { alert( "WebGL 2.0 isn't available" ); }
 
     gl.viewport(0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    gl.clearColor(0.3, 0.3, 0.3, 1.0); // background color
 
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    //points.push(vec2(-1,-0.7));
-    //points.push(vec2(-1, 0.7));
-    //points.push(vec2( 1,-0.7));
-    //points.push(vec2( 1, 0.7));
-    var bufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId );
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-
-    /*
-    var cBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, 32*num_minos, gl.STATIC_DRAW );
-
-    var colorLoc = gl.getAttribLocation( program, "aColor");
-    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(colorLoc);
-    //points.length = points.length - 4;
-*/
-    // Associate out shader variables with our data buffer
+    
     var aPosition = gl.getAttribLocation( program, "aPosition" );
     gl.vertexAttribPointer( aPosition, 2, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( aPosition );
 
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
 
+    var colorLoc = gl.getAttribLocation( program, "aColor");
+    gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(colorLoc);
 
     gl.clear( gl.COLOR_BUFFER_BIT );
     
@@ -648,7 +643,6 @@ function render() {
 
 
     for(var i=0; i < num_shapes; i++) {
-        gl.drawArrays(gl.TRIANGLE_FAN, start_idx[i], 4);
+        gl.drawArrays(gl.TRIANGLE_FAN, i*4, 4);
     }
-
 }
