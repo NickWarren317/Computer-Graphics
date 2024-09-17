@@ -487,11 +487,6 @@ function render() {
     gl.enableVertexAttribArray(colorLoc);
 
     gl.clear( gl.COLOR_BUFFER_BIT );
-    
-    //draw top and bottom border lines
-    
-    //gl.drawArrays(gl.LINES, end, 2);
-    //gl.drawArrays(gl.LINES, end + 2, 2);
 
     for(var i=0; i < num_shapes; i++) {
         gl.drawArrays(gl.TRIANGLE_FAN, i*4, 4);
