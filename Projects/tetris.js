@@ -294,9 +294,10 @@ window.onload = function init()
         var y = event.pageY - canvas.offsetTop;
         t1 = vec2(2*x/canvas.width-1, 
                     2*(canvas.height-y)/canvas.height-1);
-        
+        //place of clicked_mino;
+        let click_loc = t1;
         //id of clicked tetrimino
-        var c_object = is_within_mino(t1[0], t1[1]);
+        var c_object = is_within_mino(click_loc[0], click_loc[1]);
 
         //sets last held object
         if(held_mino == -1 && c_object != -1) {
@@ -312,7 +313,7 @@ window.onload = function init()
         if(shift_key){
             //if top object is selected
             if(c_object != -1 && c_object >= 7){
-                rotate_counter_clockwise(c_object, t1[0], t2[1]);
+                rotate_counter_clockwise(c_object, click_loc[0], click_loc[1]);
                 console.log(t1);
             }
         //Also duplicates top mino if top mino is clicked
@@ -374,7 +375,6 @@ function move_mino_y(mino_idx, dist){
 
     if(is_mino_under_line(mino_idx, points)){
         delete_tetrimino(mino_idx);
-        return;
     }
     render();
 }
@@ -432,9 +432,6 @@ function rotate_counter_clockwise(mino_idx,x,y){
 
             lilY = Math.min(p1[1], p2[1], p3[1], p4[1]);
             lilX = Math.min(p1[0], p2[0], p3[0], p4[0]);
-            
-            console.log(x,y);
-            console.log(bigX,bigY,lilX,lilY);
 
             //check if y is less than top y and greater than bottom y
             if(y <= bigY && y >= lilY){
@@ -575,13 +572,12 @@ function get_color(instructions){
 function draw_tetrimino(instructions, x, y, size,orient = 0){
     pieces_index[num_minos] = num_minos * 16;
     minos[num_minos] = instructions;
-    pieces_orientation[num_minos] = orient;
 
     console.log(num_minos);
     let color = get_color(instructions);
 
-    for(var i = 0 ; i < instructions[orient].length ; i++){
-        instructions[orient][i](x,y,size,color);
+    for(var i = 0 ; i < instructions[0].length ; i++){
+        instructions[0][i](x,y,size,color);
     }
 
     num_minos = num_minos + 1;  
