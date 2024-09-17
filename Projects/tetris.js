@@ -38,13 +38,6 @@ var mino_colors = [];
 //rotation varaible of a tetrimino, may or may not be used...
 var pieces_orientation = [];
 
-var lines = [
-    vec2(1,0.7),
-    vec2(-1,0.7),
-    vec2(1,-0.7),
-    vec2(-1,-0.7)
-]
-
 var color_select = [
     vec4(0.75, 0.5, 0.0, 0.8),  // orange - cc L
     vec4(.5, 0.0, 0.0, 0.8),  // red - left step
@@ -57,202 +50,54 @@ var color_select = [
 
 //templates for drawing each shape and each orientation.
 var t_block = [
-
-    //pos1
-    [   make_square_at_point,
-        add_up,
-        add_left,
-        add_right
-    ],
-
-    //pos2
-    [
-        make_square_at_point,
-        add_up,
-        add_right,
-        add_down
-    ],
-
-    //pos3
-    [
-        make_square_at_point,
-        add_down,
-        add_left,
-        add_right
-    ],
-
-    //pos4
-    [
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_down
-    ]
+    make_square_at_point,
+    add_up,
+    add_left,
+    add_right
 ];
 
 //remains the same no matter the orientation
 var square_block = [
-    [   
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_left
-    ],
-    [   
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_left
-    ],
-    [   
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_left
-    ],
-    [   
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_left
-    ],
+    make_square_at_point,
+    add_up,
+    add_left,
+    add_top_left
 ];
 
 
 var long_block = [
-    [
-        make_square_at_point,
-        add_up,
-        add_down,
-        add_outer_top
-    ],
-    [
-        make_square_at_point,
-        add_left,
-        add_right,
-        add_outer_right
-    ],
-    [
-        make_square_at_point,
-        add_up,
-        add_down,
-        add_outer_bottom
-    ],
-    [
-        make_square_at_point,
-        add_left,
-        add_right,
-        add_outer_left
-    ]
+    make_square_at_point,
+    add_up,
+    add_down,
+    add_outer_top
 ]; 
 
 var right_step_block = [
-    [
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_right
-    ],
-    [
-        make_square_at_point,
-        add_up,
-        add_right,
-        add_bottom_right
-    ],
-    [
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_top_right
-    ],
-    [
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_bottom_left
-    ]
+    make_square_at_point,
+    add_down,
+    add_bottom_left,
+    add_right
 ];
 
 var left_step_block = [
-    [
-        make_square_at_point,
-        add_left,
-        add_down,
-        add_bottom_right
-    ],
-    [
-        make_square_at_point,
-        add_down,
-        add_right,
-        add_top_right
-    ],
-    [
-        make_square_at_point,
-        add_left,
-        add_down,
-        add_bottom_right
-    ],
-    [
-        make_square_at_point,
-        add_up,
-        add_left,
-        add_bottom_left
-    ]
-
+    make_square_at_point,
+    add_left,
+    add_down,
+    add_bottom_right
 ];  
 
 var clockwise_l_block = [
-    [
-        make_square_at_point,
-        add_down,
-        add_up,
-        add_bottom_left
-    ],
-    [
-        make_square_at_point,
-        add_right,
-        add_left,
-        add_top_left
-    ],
-    [
-        make_square_at_point,
-        add_down,
-        add_up,
-        add_top_right
-    ],
-    [
-        make_square_at_point,
-        add_right,
-        add_left,
-        add_top_right
-    ]
+    make_square_at_point,
+    add_down,
+    add_up,
+    add_bottom_left
 ];
 
 var counter_clockwise_l_block = [
-    [
-        make_square_at_point,
-        add_down,
-        add_up,
-        add_bottom_right
-    ],
-    [
-        make_square_at_point,
-        add_left,
-        add_right,
-        add_bottom_left
-    ],
-    [
-        make_square_at_point,
-        add_down,
-        add_up,
-        add_top_left
-    ],
-    [
-        make_square_at_point,
-        add_left,
-        add_right,
-        add_top_right
-    ]
+    make_square_at_point,
+    add_down,
+    add_up,
+    add_bottom_right
 ];
 
 var tetrimino_templates = [
@@ -265,10 +110,21 @@ var tetrimino_templates = [
     t_block
 ];
 
+var boundary_color = vec4(0,0,0,1);
+
 window.onload = function init()
 {
     var canvas = document.getElementById( "gl-canvas" );
-    
+
+    //drawing top and bottom borders
+    points.push(vec2(1,1), vec2(-1,1), vec2(-1,0.7), vec2(1,0.7));
+    for(var i=0; i < 4; i++) colors.push(boundary_color);
+
+    points.push(vec2(-1,-0.7), vec2(1,-0.7),vec2(1,-1), vec2(-1,-1));
+    for(var i=0; i < 4; i++) colors.push(boundary_color);
+
+    num_shapes += 2;
+
     // draw top tetriminoes
     var line = -0.65;
     for(var i = 0; i < tetrimino_templates.length; i++){
@@ -570,14 +426,14 @@ function get_color(instructions){
 
 //draws a tetrimino based on a set of instructions
 function draw_tetrimino(instructions, x, y, size,orient = 0){
-    pieces_index[num_minos] = num_minos * 16;
+    pieces_index[num_minos] = 8 + num_minos * 16;
     minos[num_minos] = instructions;
 
     console.log(num_minos);
     let color = get_color(instructions);
 
-    for(var i = 0 ; i < instructions[0].length ; i++){
-        instructions[0][i](x,y,size,color);
+    for(var i = 0 ; i < instructions.length ; i++){
+        instructions[i](x,y,size,color);
     }
 
     num_minos = num_minos + 1;  
@@ -636,7 +492,6 @@ function render() {
     
     //gl.drawArrays(gl.LINES, end, 2);
     //gl.drawArrays(gl.LINES, end + 2, 2);
-
 
     for(var i=0; i < num_shapes; i++) {
         gl.drawArrays(gl.TRIANGLE_FAN, i*4, 4);
