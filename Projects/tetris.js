@@ -12,7 +12,6 @@
 //event variables
 var is_mousedown = false;
 var shift_key = false;
-var mino_deleted = false;
 var held_mino = -1;
 var t1, t2;
 
@@ -123,7 +122,7 @@ window.onload = function init()
     points.push(vec2(-1,-0.7), vec2(1,-0.7),vec2(1,-1), vec2(-1,-1));
     for(var i=0; i < 4; i++) colors.push(boundary_color);
 
-    num_shapes += 2;
+    num_shapes = 2;
 
     // draw top tetriminoes
     var line = -0.65;
@@ -141,7 +140,6 @@ window.onload = function init()
         is_mousedown = false;
         console.log("Up!");
         held_mino = -1;
-        mino_deleted = false;
       });
 
     canvas.addEventListener("mousedown", function(event){
@@ -174,7 +172,7 @@ window.onload = function init()
             }
         //Also duplicates top mino if top mino is clicked
         } else {
-            if(c_object != -1 && c_object < 7 && !mino_deleted){
+            if(c_object != -1 && c_object < 7){
                 draw_tetrimino(minos[c_object], t1[0], t1[1], square_size, 0);
             }
         }
@@ -373,28 +371,19 @@ function is_mino_under_line(mino_idx, p){
 }
 
 function delete_tetrimino(mino_idx){
-    //hold start of points of deleted mino
-
-    console.log(["deleting mino:", mino_idx]);
-    
+    //hold start of points of deleted mino   
     var p_start = pieces_index[mino_idx];
 
-    console.log(p_start);
-    console.log(points);
     //swap verticies
     //swap colors
     for (var i = p_start; i < p_start + 16; i++){
-        colors[i] = colors[pieces_index[num_minos] + i - p_start];
-        points[i] = points[pieces_index[num_minos] + i - p_start];
+        colors[i] = colors[pieces_index[num_minos-1] + i - p_start];
+        points[i] = points[pieces_index[num_minos-1] + i - p_start];
     }
     //replace indices
     minos[mino_idx] = mino_idx[num_minos-1];
-    //modify piece starts
-    pieces_index[mino_idx] = pieces_index[num_minos-1];
-
-    console.log(points);
-    console.log(points.length);
-    console.log(num_minos);
+    
+    //reduce counters and buffer lengths
     colors.length = colors.length - 16;
     points.length = points.length - 16;
     num_shapes = num_shapes - 4;
@@ -403,11 +392,8 @@ function delete_tetrimino(mino_idx){
     pieces_index.length = pieces_index.length - 1;
     
     num_minos = num_minos - 1;
-
     held_mino = -1;
-    console.log(points.length);
-    console.log(num_minos);
-    mino_deleted = true;
+
     render();
 }
 
