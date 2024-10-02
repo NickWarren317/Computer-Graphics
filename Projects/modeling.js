@@ -412,9 +412,9 @@ function render_prices(unlead, mid, supreme, price_board_index){
     curr_pos = vec4(pbv_tr[0], pbv_tr[1], pbv_tr[2], 1.0);
     mirror_pos = vec4(pbv_tr[0], pbv_tr[1], pbv_tr[2], 1.0);
 
-    let u = String(unlead);
-    let m = String(mid);
-    let s = String(supreme);
+    let u = String(unlead).padStart(3,'0');
+    let m = String(mid).padStart(3,'0');
+    let s = String(supreme).padStart(3,'0');
 
     let height_offset = (pbv_tl[1] - pbv_bl[1]) / 3.5;
     
