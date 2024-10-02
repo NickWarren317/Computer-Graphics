@@ -130,10 +130,8 @@ window.onload = function init()
         draw_tetrimino(tetrimino_templates[i], line + (i * 0.2), 0.825, square_size, 0);
     }
     console.log(points);
-    
     // render them
     render();
-
 
 //--------------------------Canvas Events--------------------------
     canvas.addEventListener("mouseup", function(event){
@@ -411,7 +409,7 @@ function get_color(instructions){
 }
 
 //draws a tetrimino based on a set of instructions
-function draw_tetrimino(instructions, x, y, size,orient = 0){
+function draw_tetrimino(instructions, x, y, size){
     pieces_index[num_minos] = 8 + num_minos * 16;
     minos[num_minos] = instructions;
 
