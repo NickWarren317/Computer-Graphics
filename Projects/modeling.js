@@ -669,9 +669,9 @@ function draw_cylinder(x,y,z, radius, height, partitions){
 
 }
 
-var unlead_price = 245;
-var mid_price = 321;
-var supreme_price = 376; 
+var unlead_price = 249;
+var mid_price = 289;
+var supreme_price = 329; 
 
 
 window.onload = function init() {
