@@ -1,15 +1,5 @@
 <!DOCTYPE html>
 <html>
-<h2> Interactive Gas Station Sign</h2>
-<p> </p>
-<button id = "Button1">Increase Unleaded</button>
-<button id = "Button2">Increase Midgrade</button>
-<button id = "Button3">Increase Supreme</button>
-<p> </p>
-<button id = "Button4">Decrease Unleaded</button>
-<button id = "Button5">Decrease Midgrade</button>
-<button id = "Button6">Decrease Supreme</button>
-<p> </p>
 <script id="vertex-shader" type="x-shader/x-vertex">
 #version 300 es
 
@@ -38,13 +28,13 @@ out vec4 fColor;
 void
 main()
 {
-    fColor = uColor;
+    fColor = vColor;
 }
 </script>
 
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MVnew.js"></script>
-<script type="text/javascript" src="modeling.js"></script>
+<script type="text/javascript" src="spotlight.js"></script>
 <head>
     <title> CS435 Project 3 Nicholas Warren</title>
 </head>

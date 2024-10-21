@@ -1,8 +1,6 @@
 
 "use strict";
-
-function orthoExample() {
-
+function run(){
 var canvas;
 var gl;
 
@@ -696,7 +694,6 @@ window.onload = function init() {
         render_prices(unlead_price, mid_price, supreme_price,price_board_index);
         render_names(price_board_index);
         draw_cylinder(post_start[0], post_start[1], post_start[2], 0.05, 0.75, 16);
-
     };
     document.getElementById("Button2").onclick = function(){
         mid_price+=1;
@@ -878,4 +875,4 @@ var render = function() {
         requestAnimationFrame(render);
     }
 }
-orthoExample();
+run();
